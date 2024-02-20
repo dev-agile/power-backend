@@ -1,0 +1,29 @@
+name: Deploy Back-end to EC2 Dev Server
+
+on:
+  push:
+    branches:
+      - dev  # Adjust this as necessary
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          rsync -avz --exclude='.git/' --exclude='node_modules/' ./ ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }}:/path/to/your/medusa/project
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }} << EOF
+            cd /path/to/your/medusa/project
+            npm install
+            npm run build
+            pm2 restart all || pm2 start npm --name "medusa" -- run start
+          EOF

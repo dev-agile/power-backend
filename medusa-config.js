@@ -1,6 +1,6 @@
 const dotenv = require("dotenv");
 
-let ENV_FILE_NAME = "";
+let ENV_FILE_NAME;
 switch (process.env.NODE_ENV) {
   case "production":
     ENV_FILE_NAME = ".env.production";
@@ -29,8 +29,7 @@ const ADMIN_CORS =
 const STORE_CORS = process.env.STORE_CORS || "http://localhost:8000";
 
 const DATABASE_URL =
-  process.env.DATABASE_URL || "postgres://postgres:12345@localhost:5431/postgres";
-
+  process.env.DATABASE_URL;
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
@@ -43,6 +42,16 @@ const plugins = [
       upload_dir: "uploads",
     },
   },
+  /*{
+    resolve: `medusa-plugin-prometheus`,
+    options: {
+      uriPath: "/monitoring",
+      authentication: true,
+      onAuthenticate: (req, username, password) => {
+        return username === process.env.PROM_USER_NAME && password === process.env.PROM_USER_PASS
+      },
+    },
+  },*/
   {
     resolve: "@medusajs/admin",
     /** @type {import('@medusajs/admin').PluginOptions} */
@@ -53,21 +62,83 @@ const plugins = [
       },
     },
   },
+  {
+    resolve: `medusa-file-s3`,
+    options: {
+      s3_url: process.env.S3_URL,
+      bucket: process.env.S3_BUCKET,
+      region: process.env.S3_REGION,
+      access_key_id: process.env.S3_ACCESS_KEY_ID,
+      secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+      cache_control: process.env.S3_CACHE_CONTROL,
+    },
+  },
+  {
+    resolve: `medusa-plugin-ip-lookup`,
+    options: {
+      access_token: process.env.IPSTACK_ACCESS_KEY,
+    },
+  },
+  /*{
+    resolve: "medusa-plugin-ses",
+    options: {
+      access_key_id: process.env.SES_ACCESS_KEY_ID,
+      secret_access_key: process.env.SES_SECRET_ACCESS_KEY,
+      region: process.env.SES_REGION,
+      from: process.env.SES_FROM,
+      template_path: process.env.SES_TEMPLATE_PATH,
+      partial_path: process.env.SES_PARTIAL_PATH,
+      // optional string containing email address separated by comma
+      order_placed_cc: 'person1@example.com,person2@example.com',
+      enable_endpoint: process.env.SES_ENABLE_ENDPOINT,
+      enable_sim_mode: process.env.SES_ENABLE_SIM_MODE
+    }
+  },*/
+  {
+    resolve: `medusa-plugin-algolia`,
+    options: {
+      applicationId: process.env.ALGOLIA_APP_ID,
+      adminApiKey: process.env.ALGOLIA_ADMIN_API_KEY,
+      settings: {
+        products: {
+          indexSettings: {
+            searchableAttributes: ["title", "description"],
+            attributesToRetrieve: [
+              "id",
+              "title",
+              "description",
+              "handle",
+              "thumbnail",
+              "variants",
+              "variant_sku",
+              "options",
+              "collection_title",
+              "collection_handle",
+              "images",
+            ],
+          },
+        },
+      },
+    },
+  },
+
+
 ];
 
 const modules = {
-  /*eventBus: {
+  eventBus: {
     resolve: "@medusajs/event-bus-redis",
     options: {
-      redisUrl: REDIS_URL
+      redisUrl: process.env.CACHE_REDIS_URL,
     }
   },
   cacheService: {
     resolve: "@medusajs/cache-redis",
     options: {
-      redisUrl: REDIS_URL
+      redisUrl: process.env.CACHE_REDIS_URL,
+      ttl: 30,
     }
-  },*/
+  },
 };
 
 /** @type {import('@medusajs/medusa').ConfigModule["projectConfig"]} */
@@ -78,7 +149,7 @@ const projectConfig = {
   database_url: DATABASE_URL,
   admin_cors: ADMIN_CORS,
   // Uncomment the following lines to enable REDIS
-  // redis_url: REDIS_URL
+  redis_url: REDIS_URL
 };
 
 /** @type {import('@medusajs/medusa').ConfigModule} */
