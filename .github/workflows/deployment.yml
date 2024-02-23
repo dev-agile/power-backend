@@ -3,7 +3,7 @@ name: Deploy Back-end to EC2 Dev Server
 on:
   push:
     branches:
-      - dev  # Adjust this as necessary
+      - develop  # Adjust this as necessary
 
 jobs:
   deploy:
@@ -22,7 +22,7 @@ jobs:
         run: |
           rsync -avz --exclude='.git/' --exclude='node_modules/' ./ ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }}:/path/to/your/medusa/project
           ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }} << EOF
-            cd /path/to/your/medusa/project
+            cd /home/ubuntu/dev-backend
             npm install
             npm run build
             pm2 restart all || pm2 start npm --name "medusa" -- run start
