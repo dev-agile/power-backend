@@ -20,8 +20,8 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          rsync -avz --exclude='.git/' --exclude='node_modules/' ./ ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }}:/path/to/your/medusa/project
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }} << EOF
+            rsync -avz --exclude='.git/' --exclude='node_modules/' ./ ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }}:/home/ubuntu/dev-backend
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }} << EOF
             cd /home/ubuntu/dev-backend
             npm install
             npm run build
