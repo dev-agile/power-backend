@@ -3,7 +3,7 @@ name: Deploy Back-end to EC2 Dev Server
 on:
   push:
     branches:
-      - develop  # Adjust this as necessary
+      - develop  # This triggers the workflow on pushes to the Dev branch
 
 jobs:
   deploy:
@@ -18,10 +18,15 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Add SSH key to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 44.218.251.216 >> ~/.ssh/known_hosts
+
       - name: Deploy to EC2
         run: |
-          rsync -avz --exclude='.git/' --exclude='node_modules/' ./ ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }}:/home/ubuntu/dev-backend
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST_IP }} <<EOF
+          rsync -avz --exclude='.git/' --exclude='node_modules/' ./ ubuntu@44.218.251.216:/home/ubuntu/dev-backend
+          ssh ubuntu@44.218.251.216 <<EOF
             cd /home/ubuntu/dev-backend
             npm install
             npm run build
